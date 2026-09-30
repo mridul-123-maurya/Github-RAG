@@ -13,7 +13,19 @@ async function generateAnswer(question, context) {
         throw new Error("Question must be a non-empty string");
     }
 
-    const systemPrompt = `You are a GitHub repository assistant. Answer questions using the provided repository context. Do not invent repository details. If the provided context does not contain enough information, say that you could not find the answer in the repository.`;
+    const systemPrompt = `You are a GitHub repository assistant.
+
+Answer ONLY using the repository context provided by the user.
+
+Rules:
+- Do not use outside knowledge.
+- Do not invent repository details.
+- Do not invent file names, paths, functions, technologies, or code.
+- If the context does not contain enough information, say: "I could not find this information in the repository."
+- When mentioning a file, use the exact path provided in the context.
+- When explaining implementation details, rely only on the provided code.
+- Keep the answer concise and specific.
+- Use Markdown formatting when useful.`;
 
     const userPrompt = `Context from repository:
 ---------------------
@@ -22,7 +34,8 @@ ${context || "No relevant context found."}
 
 User Question: ${question}
 
-Please answer the question based only on the context above. If relevant, mention the specific files and code referenced.`;
+Please answer the question based only on the context above.
+If relevant, mention the specific files and code referenced.`;
 
     try {
         const response = await ollama.chat({
@@ -49,16 +62,26 @@ Please answer the question based only on the context above. If relevant, mention
         }
 
         return response.message.content.trim();
+
     } catch (error) {
         if (
             error.code === "ECONNREFUSED" ||
             (error.message && error.message.includes("ECONNREFUSED"))
         ) {
-            throw new Error(`Cannot connect to Ollama at ${OLLAMA_HOST}. Make sure Ollama is running.`);
+            throw new Error(
+                `Cannot connect to Ollama at ${OLLAMA_HOST}. Make sure Ollama is running.`
+            );
         }
-        if (error.status_code === 404 || (error.message && error.message.includes("not found"))) {
-            throw new Error(`Ollama model "${OLLAMA_LLM_MODEL}" not found. Run 'ollama pull ${OLLAMA_LLM_MODEL}' to install it.`);
+
+        if (
+            error.status_code === 404 ||
+            (error.message && error.message.includes("not found"))
+        ) {
+            throw new Error(
+                `Ollama model "${OLLAMA_LLM_MODEL}" not found. Run 'ollama pull ${OLLAMA_LLM_MODEL}' to install it.`
+            );
         }
+
         throw error;
     }
 }

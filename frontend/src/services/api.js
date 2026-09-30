@@ -50,7 +50,11 @@ export async function searchRepository(question, repository = null) {
     headers: {
       'Content-Type': 'application/json'
     },
-    body: JSON.stringify({ question, repository })
+    body: JSON.stringify({
+      question,
+      repository,
+      nResults: 8
+    })
   });
 
   return handleResponse(response);
