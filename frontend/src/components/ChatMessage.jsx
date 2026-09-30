@@ -1,4 +1,5 @@
 import React from 'react';
+import ReactMarkdown from 'react-markdown';
 import SourceList from './SourceList';
 
 export default function ChatMessage({ item }) {
@@ -14,14 +15,20 @@ export default function ChatMessage({ item }) {
 
       <div className="answer-bubble">
         <span className="bubble-label">Answer:</span>
+
         {error ? (
           <div className="error-box">
             <strong>Error:</strong> {error}
           </div>
         ) : (
           <div className="answer-content">
-            <p className="answer-text">{answer}</p>
-            {sources && sources.length > 0 && <SourceList sources={sources} />}
+            <div className="answer-text">
+              <ReactMarkdown>{answer}</ReactMarkdown>
+            </div>
+
+            {sources && sources.length > 0 && (
+              <SourceList sources={sources} />
+            )}
           </div>
         )}
       </div>
